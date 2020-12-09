@@ -1,4 +1,4 @@
-package top.jiangyixin.poseidon.exception;
+package top.jiangyixin.poseidon.core.exception;
 
 /**
  * Poseidon Exception

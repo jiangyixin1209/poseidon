@@ -6,7 +6,22 @@
 
     <groupId>top.jiangyixin</groupId>
     <artifactId>poseidon</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <version>0.1.0</version>
+    <modules>
+        <module>poseidon-core</module>
+        <module>poseidon-admin</module>
+    </modules>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
+    </properties>
 
 
 </project>
