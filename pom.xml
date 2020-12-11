@@ -23,6 +23,7 @@
         <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
 
         <slf4j-api.version>1.7.30</slf4j-api.version>
+        <jackson.version>2.11.2</jackson.version>
     </properties>
 
 

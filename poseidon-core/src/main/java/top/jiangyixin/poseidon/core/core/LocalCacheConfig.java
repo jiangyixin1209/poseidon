@@ -2,6 +2,7 @@ package top.jiangyixin.poseidon.core.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.jiangyixin.poseidon.core.common.SetType;
 import top.jiangyixin.poseidon.core.exception.PoseidonException;
 
 import java.util.HashMap;
@@ -57,4 +58,36 @@ public class LocalCacheConfig {
 		logger.info(">>>>>>>>>> RemoteConfig init success");
 
 	}
+
+	private static void set(String key, String value, SetType setType) {
+		localCache.put(key, value);
+		logger.info("poseidon: {} : [{}={}]", setType, key, value);
+
+		if (setType == SetType.SET) {
+		} else if (setType == SetType.RELOAD) {
+			refreshThread.interrupt();
+		}
+
+	}
+
+	/**
+	 * 获取内存缓存中的配置
+	 * @param key       配置key
+	 * @return          配置value
+	 */
+	private static String get(String key) {
+		if (localCache.containsKey(key)) {
+			return localCache.get(key);
+		}
+		return null;
+	}
+
+	private static String get(String key, String defaultValue) {
+		String value = get(key);
+		if (value == null) {
+			value = defaultValue;
+		}
+		return value;
+	}
+
 }

@@ -2,7 +2,6 @@ package top.jiangyixin.poseidon.core.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jiangyixin.poseidon.core.exception.PoseidonException;
 
 import java.io.*;
 import java.net.URL;
@@ -26,7 +25,7 @@ public class PropertyUtils {
 	 */
 	public static Properties readProperty(String propertyFilename) {
 		if (StringUtils.isEmpty(propertyFilename)) {
-			throw new PoseidonException("propertyFilename can not be empty");
+			throw new RuntimeException("propertyFilename can not be empty");
 		}
 		if (propertyFilename.startsWith(FILE_PROTOCOL)) {
 			propertyFilename = propertyFilename.substring(FILE_PROTOCOL.length());
@@ -110,7 +109,7 @@ public class PropertyUtils {
 			if (!file.exists()) {
 				boolean mkdirs = file.getParentFile().mkdirs();
 				if (!mkdirs) {
-					throw new PoseidonException("mkdir dir error");
+					throw new RuntimeException("mkdir dir error");
 				}
 			}
 			fileOutputStream = new FileOutputStream(file, false);
