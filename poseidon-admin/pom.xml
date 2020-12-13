@@ -10,18 +10,33 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>poseidon-admin</artifactId>
+    <properties>
+
+    </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>top.jiangyixin</groupId>
+            <artifactId>poseidon-core</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <!-- SpringBoot依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring-boot.version}</version>
         </dependency>
-
+        <!-- MySql依赖 -->
         <dependency>
-            <groupId>top.jiangyixin</groupId>
-            <artifactId>poseidon-core</artifactId>
-            <version>${project.parent.version}</version>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+        <!-- Mybatis依赖 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatis-plus.version}</version>
         </dependency>
     </dependencies>
 </project>

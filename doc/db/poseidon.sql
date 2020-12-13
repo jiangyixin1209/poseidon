@@ -3,8 +3,8 @@ USE `poseidon`;
 
 CREATE TABLE `poseidon_env` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `env_code` VARCHAR(100) NOT NULL COMMENT 'ENV',
-  `env_name` VARCHAR(100) NOT NULL COMMENT '环境名称',
+  `code` VARCHAR(100) NOT NULL COMMENT 'ENV',
+  `name` VARCHAR(100) NOT NULL COMMENT '环境名称',
   `order` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '显示排序',
   `gmt_create` DATETIME NOT NULL COMMENT '创建时间',
   `gmt_modified` DATETIME NOT NULL COMMENT '修改时间',
@@ -14,8 +14,8 @@ CREATE TABLE `poseidon_env` (
 
 CREATE TABLE `poseidon_project` (
    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
-   `project_code` VARCHAR(100) NOT NULL COMMENT '项目code',
-   `project_name` VARCHAR(100) NOT NULL COMMENT '项目显示名称',
+   `code` VARCHAR(100) NOT NULL COMMENT '项目code',
+   `name` VARCHAR(100) NOT NULL COMMENT '项目显示名称',
    `gmt_create` DATETIME NOT NULL COMMENT '创建时间',
    `gmt_modified` DATETIME NOT NULL COMMENT '修改时间',
    PRIMARY KEY (`id`),
@@ -36,8 +36,8 @@ CREATE TABLE `poseidon_user`(
 
 CREATE TABLE `poseidon_config`(
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `env` VARCHAR(100) NOT NULL COMMENT '配置环境',
-    `project` VARCHAR(100) NOT NULL COMMENT '所属项目code',
+    `env_code` VARCHAR(100) NOT NULL COMMENT '配置环境code',
+    `project_code` VARCHAR(100) NOT NULL COMMENT '所属项目code',
     `key` VARCHAR(100) NOT NULL COMMENT '配置key',
     `desc` VARCHAR(100) NOT NULL COMMENT '配置描述',
     `value` VARCHAR(2000) NOT NULL COMMENT '配置值',
@@ -49,8 +49,8 @@ CREATE TABLE `poseidon_config`(
 
 CREATE TABLE `poseidon_config_log`(
       `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
-      `env` VARCHAR(100) NOT NULL COMMENT '配置环境',
-      `project` VARCHAR(100) NOT NULL COMMENT '所属项目code',
+      `env_code` VARCHAR(100) NOT NULL COMMENT '配置环境code',
+      `project_code` VARCHAR(100) NOT NULL COMMENT '所属项目code',
       `key` VARCHAR(100) NOT NULL COMMENT '配置key',
       `desc` VARCHAR(100) NOT NULL COMMENT '变更描述',
       `old_value` VARCHAR(2000) NOT NULL COMMENT '旧值',

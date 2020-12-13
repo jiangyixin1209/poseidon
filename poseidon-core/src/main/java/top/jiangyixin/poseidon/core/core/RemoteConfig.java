@@ -3,6 +3,9 @@ package top.jiangyixin.poseidon.core.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jiangyixin.poseidon.core.exception.PoseidonException;
+import top.jiangyixin.poseidon.core.pojo.ConfigParamDTO;
+import top.jiangyixin.poseidon.core.util.HttpUtils;
+import top.jiangyixin.poseidon.core.util.JsonUtils;
 import top.jiangyixin.poseidon.core.util.StringUtils;
 
 import java.util.*;
@@ -33,11 +36,47 @@ public class RemoteConfig {
 		RemoteConfig.addressList.addAll(Arrays.asList(address.split(",")));
 	}
 
-	public static String get(String key) {
-		return "";
+	public static Map remote(String url, String body) {
+		try {
+			String s = HttpUtils.doPost(url, body);
+			if (StringUtils.isEmpty(s)) {
+				return null;
+			}
+			Map<String, Object> response = (Map<String, Object>)JsonUtils.parse(s, Map.class);
+			int code = Integer.parseInt(String.valueOf(response.get("code")));
+			if (code != 200) {
+				logger.error("request fail, msg={}", (response.getOrDefault("message", response)));
+				return null;
+			}
+			return response;
+		} catch (Exception e) {
+			logger.error("remote get data error, url:{},body:{}", url, body);
+			return null;
+		}
 	}
 
-	public static Map<String, String> get(Set<String> key) {
+	public static String get(String key) {
+		Map<String, String> result = RemoteConfig.get(new HashSet<String>(Collections.singletonList(key)));
+		if (result != null) {
+			return result.get(key);
+		}
+		return null;
+	}
+
+	public static Map<String, String> get(Set<String> keys) {
+		for (String addressUrl : RemoteConfig.addressList) {
+			String url = addressUrl + "/conf/get";
+			ConfigParamDTO configParamDTO = new ConfigParamDTO();
+			configParamDTO.setAccessToken(RemoteConfig.accessToken);
+			configParamDTO.setEnv(RemoteConfig.env);
+			configParamDTO.setKeys(new ArrayList<>(keys));
+			String jsonBody = JsonUtils.toJsonString(configParamDTO);
+			Map remote = RemoteConfig.remote(addressUrl, jsonBody);
+			if (remote != null && remote.containsKey("data")) {
+				Map<String, String> data = (Map<String, String>) remote.get("data");
+				return data;
+			}
+		}
 		return null;
 	}
 

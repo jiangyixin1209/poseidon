@@ -23,7 +23,7 @@ public class HttpUtils {
 	 * @return String json字符串，成功：code=1001，否者为其他值
 	 * @throws Exception 链接超市异常、参数url错误格式异常
 	 */
-	public static String doPost(String urlPath, String parameterData, String who, String ip) throws Exception {
+	public static String doPost(String urlPath, String parameterData) throws Exception {
 		// 避免null引起的空指针异常
 		if (null == urlPath || null == parameterData) {
 			return "";
@@ -33,12 +33,6 @@ public class HttpUtils {
 		HttpURLConnection httpUrlConnection = (HttpURLConnection) connection;
 
 		httpUrlConnection.setDoOutput(true);
-		if (!StringUtils.isEmpty(who)) {
-			httpUrlConnection.setRequestProperty("who", who);
-		}
-		if (!StringUtils.isEmpty(ip)) {
-			httpUrlConnection.setRequestProperty("clientIP", ip);
-		}
 		httpUrlConnection.setRequestMethod("POST");
 		httpUrlConnection.setRequestProperty("Accept-Charset", "utf-8");
 		httpUrlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -101,7 +95,7 @@ public class HttpUtils {
 					.append("&");
 		}
 		// no matter for the last '&' character
-		return doPost(url, sb.toString(), "", "");
+		return doPost(url, sb.toString());
 	}
 
 	/**
@@ -111,7 +105,7 @@ public class HttpUtils {
 	 * @param param 请求参数，请求参数应该是 name1=value1&name2=value2 的形式。
 	 * @return URL 所代表远程资源的响应结果
 	 */
-	public static String sendGet(String url, String param, String who, String ip) {
+	public static String sendGet(String url, String param) {
 		StringBuilder result = new StringBuilder();
 		BufferedReader in = null;
 		try {
@@ -122,13 +116,6 @@ public class HttpUtils {
 			URL realUrl = new URL(urlNameString);
 			// 打开和URL之间的连接
 			URLConnection connection = realUrl.openConnection();
-			// 设置通用的请求属性
-			if (!StringUtils.isEmpty(who)) {
-				connection.setRequestProperty("who", who);
-			}
-			if (!StringUtils.isEmpty(ip)) {
-				connection.setRequestProperty("clientIP", ip);
-			}
 			connection.setRequestProperty("accept", "*/*");
 			connection.setRequestProperty("connection", "Keep-Alive");
 			connection.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
@@ -167,6 +154,6 @@ public class HttpUtils {
 					.append("&");
 		}
 		// no matter for the last '&' character
-		return sendGet(url, sb.toString(), "", "");
+		return sendGet(url, sb.toString());
 	}
 }
