@@ -5,7 +5,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
+ * 波塞冬(Poseidon) 启动类
  * @author jiangyixin
+ * @since 2020-12-14
  */
 @SpringBootApplication
 @MapperScan("top.jiangyixin.poseidon.admin.mapper")
