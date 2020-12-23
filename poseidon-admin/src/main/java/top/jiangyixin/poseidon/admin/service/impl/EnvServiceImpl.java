@@ -1,14 +1,29 @@
 package top.jiangyixin.poseidon.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import top.jiangyixin.poseidon.admin.entity.Env;
 import top.jiangyixin.poseidon.admin.mapper.EnvMapper;
+import top.jiangyixin.poseidon.admin.pojo.vo.EnvVo;
 import top.jiangyixin.poseidon.admin.service.EnvService;
+import top.jiangyixin.poseidon.admin.util.PojoUtil;
+
+import java.util.List;
 
 /**
  * Env Service 接口实现
  * @author jiangyixin
  * @since 2020-12-14
  */
+@Service
 public class EnvServiceImpl extends ServiceImpl<EnvMapper, Env> implements EnvService  {
+	
+	
+	@Override
+	public List<EnvVo> findAll() {
+		List<Env> envList = this.list(new QueryWrapper<Env>().orderByDesc("sort"));
+		return PojoUtil.copyList(envList, EnvVo.class);
+	}
 }

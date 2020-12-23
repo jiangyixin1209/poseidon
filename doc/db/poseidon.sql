@@ -5,11 +5,11 @@ CREATE TABLE `poseidon_env` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
   `code` VARCHAR(100) NOT NULL COMMENT 'ENV',
   `name` VARCHAR(100) NOT NULL COMMENT '环境名称',
-  `order` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '显示排序',
+  `sort` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '显示排序',
   `gmt_create` DATETIME NOT NULL COMMENT '创建时间',
   `gmt_modified` DATETIME NOT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`),
-  UNIQUE 'uk_env_code'(`env_code`)
+  UNIQUE uk_env_code(`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '环境表';
 
 CREATE TABLE `poseidon_project` (
@@ -19,7 +19,7 @@ CREATE TABLE `poseidon_project` (
    `gmt_create` DATETIME NOT NULL COMMENT '创建时间',
    `gmt_modified` DATETIME NOT NULL COMMENT '修改时间',
    PRIMARY KEY (`id`),
-   UNIQUE 'uk_project_code'(`project_code`)
+   UNIQUE uk_project_code(`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '项目表';
 
 CREATE TABLE `poseidon_user`(
@@ -31,7 +31,7 @@ CREATE TABLE `poseidon_user`(
     `gmt_create` DATETIME NOT NULL COMMENT '创建时间',
     `gmt_modified` DATETIME NOT NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE 'uk_username'(`username`)
+    UNIQUE uk_username(`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户表';
 
 CREATE TABLE `poseidon_config`(
@@ -44,7 +44,7 @@ CREATE TABLE `poseidon_config`(
     `gmt_create` DATETIME NOT NULL COMMENT '创建时间',
     `gmt_modified` DATETIME NOT NULL COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    UNIQUE 'uk_env_project_key'(`env`, `project`, `key`)
+    UNIQUE uk_env_project_key(`env_code`, `project_code`, `key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '配置表';
 
 CREATE TABLE `poseidon_config_log`(

@@ -8,6 +8,7 @@ import top.jiangyixin.poseidon.core.exception.PoseidonException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author jiangyixin
@@ -58,6 +59,13 @@ public class LocalCacheConfig {
 		logger.info(">>>>>>>>>> RemoteConfig init success");
 
 	}
+	
+	private static void refreshCacheAndMirror() throws InterruptedException {
+		if (localCache.size() == 0) {
+			TimeUnit.SECONDS.sleep(3);
+			return;
+		}
+	}
 
 	private static void set(String key, String value, SetType setType) {
 		localCache.put(key, value);
@@ -71,7 +79,7 @@ public class LocalCacheConfig {
 	}
 
 	/**
-	 * 获取内存缓存中的配置
+	 * 从 local cache 中获取配置
 	 * @param key       配置key
 	 * @return          配置value
 	 */
@@ -81,13 +89,32 @@ public class LocalCacheConfig {
 		}
 		return null;
 	}
-
-	private static String get(String key, String defaultValue) {
+	
+	/**
+	 * 获取缓存
+	 * @param key               cache key
+	 * @param defaultValue      default value
+	 * @return                  cache value
+	 */
+	public static String get(String key, String defaultValue) {
+		// 1、先从local cache 中获取缓存
 		String value = get(key);
-		if (value == null) {
-			value = defaultValue;
+		if (value != null) {
+			return value;
 		}
-		return value;
+		// 2、从远程获取
+		String remoteValue = null;
+		try {
+			remoteValue = RemoteConfig.get(key);
+		} catch (Exception e) {
+			logger.error("Get {} from remote fail, {}", key, e.getMessage());
+		}
+		// 缓存一份到 local cache，支持缓存值为null
+		set(key, remoteValue, SetType.SET);
+		if (remoteValue != null) {
+			return remoteValue;
+		}
+		return defaultValue;
 	}
 
 }

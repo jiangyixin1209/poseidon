@@ -3,6 +3,7 @@ package top.jiangyixin.poseidon.core.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jiangyixin.poseidon.core.exception.PoseidonException;
+import top.jiangyixin.poseidon.core.pojo.ConfigDTO;
 import top.jiangyixin.poseidon.core.pojo.ConfigParamDTO;
 import top.jiangyixin.poseidon.core.util.HttpUtils;
 import top.jiangyixin.poseidon.core.util.JsonUtils;
@@ -35,35 +36,50 @@ public class RemoteConfig {
 		RemoteConfig.accessToken = accessToken;
 		RemoteConfig.addressList.addAll(Arrays.asList(address.split(",")));
 	}
-
-	public static Map remote(String url, String body) {
+	
+	/**
+	 * 远程请求
+	 * @param url               中心服务器地址
+	 * @param body              请求参数
+	 * @return                  List<ConfigDTO.ConfigVO>
+	 */
+	public static List<ConfigDTO.ConfigVO> remote(String url, String body) {
 		try {
 			String s = HttpUtils.doPost(url, body);
 			if (StringUtils.isEmpty(s)) {
 				return null;
 			}
-			Map<String, Object> response = (Map<String, Object>)JsonUtils.parse(s, Map.class);
-			int code = Integer.parseInt(String.valueOf(response.get("code")));
-			if (code != 200) {
-				logger.error("request fail, msg={}", (response.getOrDefault("message", response)));
+			ConfigDTO configDTO = JsonUtils.parse(s, ConfigDTO.class);
+			if (configDTO.getCode() != 200) {
+				logger.error("request fail, msg={}", configDTO.getMessage());
 				return null;
 			}
-			return response;
+			return configDTO.getConfigList();
 		} catch (Exception e) {
 			logger.error("remote get data error, url:{},body:{}", url, body);
 			return null;
 		}
 	}
-
+	
+	/**
+	 * 获取单个key的值
+	 * @param key               key
+	 * @return                  value
+	 */
 	public static String get(String key) {
-		Map<String, String> result = RemoteConfig.get(new HashSet<String>(Collections.singletonList(key)));
-		if (result != null) {
-			return result.get(key);
+		List<ConfigDTO.ConfigVO> voList = RemoteConfig.get(new HashSet<String>(Collections.singletonList(key)));
+		if (voList != null && !voList.isEmpty()) {
+			return voList.get(0).getValue();
 		}
 		return null;
 	}
-
-	public static Map<String, String> get(Set<String> keys) {
+	
+	/**
+	 * 远程获取 key 集合的值
+	 * @param keys              key set
+	 * @return                  value list
+	 */
+	public static List<ConfigDTO.ConfigVO> get(Set<String> keys) {
 		for (String addressUrl : RemoteConfig.addressList) {
 			String url = addressUrl + "/conf/get";
 			ConfigParamDTO configParamDTO = new ConfigParamDTO();
@@ -71,10 +87,9 @@ public class RemoteConfig {
 			configParamDTO.setEnv(RemoteConfig.env);
 			configParamDTO.setKeys(new ArrayList<>(keys));
 			String jsonBody = JsonUtils.toJsonString(configParamDTO);
-			Map remote = RemoteConfig.remote(addressUrl, jsonBody);
-			if (remote != null && remote.containsKey("data")) {
-				Map<String, String> data = (Map<String, String>) remote.get("data");
-				return data;
+			List<ConfigDTO.ConfigVO> configList = RemoteConfig.remote(url, jsonBody);
+			if (configList != null && !configList.isEmpty()) {
+				return configList;
 			}
 		}
 		return null;

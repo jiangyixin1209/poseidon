@@ -1,6 +1,7 @@
 package top.jiangyixin.poseidon.admin.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.springframework.stereotype.Repository;
 import top.jiangyixin.poseidon.admin.entity.Env;
 
 /**
@@ -8,5 +9,6 @@ import top.jiangyixin.poseidon.admin.entity.Env;
  * @author jiangyixin
  * @since 2020-12-13
  */
+@Repository
 public interface EnvMapper extends BaseMapper<Env> {
 }
