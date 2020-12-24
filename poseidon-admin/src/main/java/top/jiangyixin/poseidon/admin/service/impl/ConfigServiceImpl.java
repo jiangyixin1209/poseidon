@@ -15,6 +15,7 @@ import top.jiangyixin.poseidon.core.util.PropertyUtils;
 import top.jiangyixin.poseidon.core.util.StringUtils;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -29,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> implements ConfigService {
 	
 	private final static Logger logger = LoggerFactory.getLogger(ConfigServiceImpl.class);
+	public final static String DEFAULT_KEY_NAME = "value";
 	
 	/**
 	 * 访问access token
@@ -48,6 +50,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	
 	@Override
 	public R<?> get(ConfigQuery configQuery) {
+		// 校验参数
 		if (!StringUtils.isEmpty(this.accessToken) && !this.accessToken.equals(configQuery.getAccessToken())) {
 			return R.fail("AccessToken invalid!");
 		}
@@ -57,7 +60,17 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		if (configQuery.getKeys() == null || configQuery.getKeys().size() == 0) {
 			return R.fail("Keys invalid!");
 		}
-		return null;
+		
+		// 从本地properties文件中读取配置
+		Map<String, String> result = new HashMap<>(configQuery.getKeys().size());
+		for (String key : configQuery.getKeys()) {
+			String value = getConfigFromFile(configQuery.getEnv(), key);
+			if (value == null) {
+				value = "";
+			}
+			result.put(key, value);
+		}
+		return new R<>(R.SUCCESS_CODE, result);
 	}
 	
 	@Override
@@ -81,7 +94,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	public String getConfigFromFile(String env, String key) {
 		String configFilePath = getConfigFilepath(env, key);
 		Properties properties = PropertyUtils.readProperty(configFilePath);
-		if (properties != null && properties.containsKey("value")) {
+		if (properties != null && properties.containsKey(DEFAULT_KEY_NAME)) {
 			return properties.getProperty("value");
 		}
 		return null;
