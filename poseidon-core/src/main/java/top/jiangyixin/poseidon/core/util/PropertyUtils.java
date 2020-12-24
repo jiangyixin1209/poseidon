@@ -29,7 +29,7 @@ public class PropertyUtils {
 		}
 		if (propertyFilename.startsWith(FILE_PROTOCOL)) {
 			propertyFilename = propertyFilename.substring(FILE_PROTOCOL.length());
-			return readPropertyFile(propertyFilename);
+			return readPropertyByFile(propertyFilename);
 		} else {
 			return readPropertyByClasspath(propertyFilename);
 		}
@@ -70,7 +70,7 @@ public class PropertyUtils {
 	 * @param propertyFilename      Properties文件路径
 	 * @return                      Properties
 	 */
-	public static Properties readPropertyFile(String propertyFilename) {
+	public static Properties readPropertyByFile(String propertyFilename) {
 		InputStream inputStream = null;
 		try {
 			File file = new File(propertyFilename);

@@ -63,4 +63,11 @@ CREATE TABLE `poseidon_config_log`(
 
 CREATE TABLE `poseidon_config_notify`(
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `env_code` VARCHAR(100) NOT NULL COMMENT '配置环境code',
+    `project_code` VARCHAR(100) NOT NULL COMMENT '所属项目code',
+    `key` VARCHAR(100) NOT NULL COMMENT '配置key',
+    `value` VARCHAR(2000) NOT NULL COMMENT '值',
+    `gmt_create` DATETIME NOT NULL COMMENT '创建时间',
+    `gmt_modified` DATETIME NOT NULL COMMENT '修改时间',
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '配置变更通知表';
