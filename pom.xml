@@ -24,6 +24,7 @@
         <mysql.version>8.0.21</mysql.version>
         <mybatis-plus.version>3.4.1</mybatis-plus.version>
         <spring.version>4.3.21.RELEASE</spring.version>
+        <commons-lang3.version>3.8.1</commons-lang3.version>
     </properties>
 
 

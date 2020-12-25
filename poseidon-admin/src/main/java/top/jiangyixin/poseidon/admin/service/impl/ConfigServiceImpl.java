@@ -1,19 +1,28 @@
 package top.jiangyixin.poseidon.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.async.DeferredResult;
 import top.jiangyixin.poseidon.admin.entity.Config;
+import top.jiangyixin.poseidon.admin.entity.Env;
+import top.jiangyixin.poseidon.admin.entity.Project;
+import top.jiangyixin.poseidon.admin.entity.User;
 import top.jiangyixin.poseidon.admin.mapper.ConfigMapper;
+import top.jiangyixin.poseidon.admin.mapper.EnvMapper;
+import top.jiangyixin.poseidon.admin.mapper.ProjectMapper;
 import top.jiangyixin.poseidon.admin.pojo.query.ConfigQuery;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.ConfigService;
+import top.jiangyixin.poseidon.admin.service.UserService;
 import top.jiangyixin.poseidon.core.util.PropertyUtils;
-import top.jiangyixin.poseidon.core.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +38,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> implements ConfigService {
 	
+	private final UserService userService;
+	private final ConfigMapper configMapper;
+	private final ProjectMapper projectMapper;
+	private final EnvMapper envMapper;
 	private final static Logger logger = LoggerFactory.getLogger(ConfigServiceImpl.class);
 	public final static String DEFAULT_KEY_NAME = "value";
 	
@@ -44,9 +57,45 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	@Value("${poseidon.conf.dir}")
 	private String configDir;
 	/**
-	 * 延迟Result，存放各个客户端对某个key的监控
+	 * DeferredResult，存放各个客户端对某个key的监控
 	 */
 	private final Map<String, List<DeferredResult<R<String>>>> configDeferredResult = new ConcurrentHashMap<>();
+	
+	@Autowired
+	public ConfigServiceImpl(UserService userService, ConfigMapper configMapper,
+	                         ProjectMapper projectMapper, EnvMapper envMapper) {
+		this.userService = userService;
+		this.configMapper = configMapper;
+		this.projectMapper = projectMapper;
+		this.envMapper = envMapper;
+	}
+	
+	@Override
+	public R<String> add(Config config, User user) {
+		if (StringUtils.isEmpty(config.getProjectCode())) {
+			return R.fail("Project不能为空");
+		}
+		if (StringUtils.isEmpty(config.getEnvCode())) {
+			return R.fail("ENV不能为空");
+		}
+		if (userService.hasProjectPermission(user, config)) {
+			return R.fail("您没有该项目的配置权限,请联系管理员开通");
+		}
+		Env env = envMapper.selectOne(new QueryWrapper<Env>()
+				.eq("code", config.getEnvCode()));
+		if (env == null) {
+			return R.fail("Env [" + config.getEnvCode() + "]不存在");
+		}
+		Project project = projectMapper.selectOne(new QueryWrapper<Project>()
+				.eq("code", config.getProjectCode()));
+		if (project == null) {
+			return R.fail("Project [" + config.getProjectCode() + "]不存在");
+		}
+		config.setKey(config.getKey().trim());
+		
+		
+		return null;
+	}
 	
 	@Override
 	public R<?> get(ConfigQuery configQuery) {

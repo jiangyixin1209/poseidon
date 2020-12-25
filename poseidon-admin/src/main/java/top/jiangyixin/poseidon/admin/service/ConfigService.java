@@ -3,6 +3,7 @@ package top.jiangyixin.poseidon.admin.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.context.request.async.DeferredResult;
 import top.jiangyixin.poseidon.admin.entity.Config;
+import top.jiangyixin.poseidon.admin.entity.User;
 import top.jiangyixin.poseidon.admin.pojo.query.ConfigQuery;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
 
@@ -14,6 +15,14 @@ import java.util.Map;
  * @since 2020-12-14
  */
 public interface ConfigService extends IService<Config> {
+	
+	/**
+	 * 新增配置
+	 * @param config        config
+	 * @param user          login user
+	 * @return
+	 */
+	R<String> add(Config config, User user);
 	
 	/**
 	 * 获取配置
