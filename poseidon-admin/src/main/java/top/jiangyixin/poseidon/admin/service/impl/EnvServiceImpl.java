@@ -2,9 +2,8 @@ package top.jiangyixin.poseidon.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import top.jiangyixin.poseidon.admin.entity.Env;
+import top.jiangyixin.poseidon.admin.pojo.entity.Env;
 import top.jiangyixin.poseidon.admin.mapper.EnvMapper;
 import top.jiangyixin.poseidon.admin.pojo.vo.EnvVo;
 import top.jiangyixin.poseidon.admin.service.EnvService;

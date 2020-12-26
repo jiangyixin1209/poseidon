@@ -1,4 +1,4 @@
-package top.jiangyixin.poseidon.admin.entity;
+package top.jiangyixin.poseidon.admin.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -8,17 +8,20 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * 项目表
+ * 配置表
  * @author jiangyixin
  * @since 2020-12-13
  */
 @Data
 @Builder
-public class Project {
+public class Config {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String code;
-    private String name;
+    private String env;
+    private String project;
+    private String key;
+    private String value;
+    private String desc;
     private Date gmtCreate;
     private Date gmtModified;
 }

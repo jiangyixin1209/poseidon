@@ -1,4 +1,4 @@
-package top.jiangyixin.poseidon.admin.entity;
+package top.jiangyixin.poseidon.admin.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -8,22 +8,20 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * 配置日志变更表
+ * 配置通知
+ *
  * @author jiangyixin
- * @since 2020-12-13
+ * @version 1.0
+ * @date 2020/12/26
  */
 @Data
-@Builder
-public class ConfigLog {
+public class ConfigNotify {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String envCode;
-    private String projectCode;
+    private String env;
+    private String project;
     private String key;
-    private String desc;
-    private String oldValue;
-    private String newValue;
-    private String optUser;
+    private String value;
     private Date gmtCreate;
     private Date gmtModified;
 }

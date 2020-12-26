@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import top.jiangyixin.poseidon.admin.entity.Config;
-import top.jiangyixin.poseidon.admin.entity.User;
+import top.jiangyixin.poseidon.admin.pojo.entity.Config;
+import top.jiangyixin.poseidon.admin.pojo.entity.User;
 import top.jiangyixin.poseidon.admin.mapper.UserMapper;
 import top.jiangyixin.poseidon.admin.service.UserService;
 

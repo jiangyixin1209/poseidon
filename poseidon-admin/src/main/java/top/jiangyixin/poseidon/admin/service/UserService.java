@@ -1,8 +1,8 @@
 package top.jiangyixin.poseidon.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import top.jiangyixin.poseidon.admin.entity.Config;
-import top.jiangyixin.poseidon.admin.entity.User;
+import top.jiangyixin.poseidon.admin.pojo.entity.Config;
+import top.jiangyixin.poseidon.admin.pojo.entity.User;
 
 /**
  * 用户 Service 接口

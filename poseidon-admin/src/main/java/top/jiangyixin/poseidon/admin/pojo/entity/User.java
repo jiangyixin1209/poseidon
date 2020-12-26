@@ -1,4 +1,4 @@
-package top.jiangyixin.poseidon.admin.entity;
+package top.jiangyixin.poseidon.admin.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

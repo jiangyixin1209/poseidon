@@ -36,21 +36,21 @@ CREATE TABLE `poseidon_user`(
 
 CREATE TABLE `poseidon_config`(
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `env_code` VARCHAR(100) NOT NULL COMMENT '配置环境code',
-    `project_code` VARCHAR(100) NOT NULL COMMENT '所属项目code',
+    `env` VARCHAR(100) NOT NULL COMMENT '配置环境code',
+    `project` VARCHAR(100) NOT NULL COMMENT '所属项目code',
     `key` VARCHAR(100) NOT NULL COMMENT '配置key',
     `desc` VARCHAR(100) NOT NULL COMMENT '配置描述',
     `value` VARCHAR(2000) NOT NULL COMMENT '配置值',
     `gmt_create` DATETIME NOT NULL COMMENT '创建时间',
     `gmt_modified` DATETIME NOT NULL COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    UNIQUE uk_env_project_key(`env_code`, `project_code`, `key`)
+    UNIQUE uk_env_project_key(`env`, `project`, `key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '配置表';
 
 CREATE TABLE `poseidon_config_log`(
       `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
-      `env_code` VARCHAR(100) NOT NULL COMMENT '配置环境code',
-      `project_code` VARCHAR(100) NOT NULL COMMENT '所属项目code',
+      `env` VARCHAR(100) NOT NULL COMMENT '配置环境code',
+      `project` VARCHAR(100) NOT NULL COMMENT '所属项目code',
       `key` VARCHAR(100) NOT NULL COMMENT '配置key',
       `desc` VARCHAR(100) NOT NULL COMMENT '变更描述',
       `old_value` VARCHAR(2000) NOT NULL COMMENT '旧值',
@@ -63,8 +63,8 @@ CREATE TABLE `poseidon_config_log`(
 
 CREATE TABLE `poseidon_config_notify`(
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `env_code` VARCHAR(100) NOT NULL COMMENT '配置环境code',
-    `project_code` VARCHAR(100) NOT NULL COMMENT '所属项目code',
+    `env` VARCHAR(100) NOT NULL COMMENT '配置环境code',
+    `project` VARCHAR(100) NOT NULL COMMENT '所属项目code',
     `key` VARCHAR(100) NOT NULL COMMENT '配置key',
     `value` VARCHAR(2000) NOT NULL COMMENT '值',
     `gmt_create` DATETIME NOT NULL COMMENT '创建时间',

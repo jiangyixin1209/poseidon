@@ -2,12 +2,10 @@ package top.jiangyixin.poseidon.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.context.request.async.DeferredResult;
-import top.jiangyixin.poseidon.admin.entity.Config;
-import top.jiangyixin.poseidon.admin.entity.User;
+import top.jiangyixin.poseidon.admin.pojo.entity.Config;
+import top.jiangyixin.poseidon.admin.pojo.entity.User;
 import top.jiangyixin.poseidon.admin.pojo.query.ConfigQuery;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
-
-import java.util.Map;
 
 /**
  * 配置 Service 接口

@@ -1,7 +1,7 @@
 package top.jiangyixin.poseidon.admin.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import top.jiangyixin.poseidon.admin.entity.ConfigLog;
+import top.jiangyixin.poseidon.admin.pojo.entity.ConfigLog;
 import top.jiangyixin.poseidon.admin.mapper.ConfigLogMapper;
 import top.jiangyixin.poseidon.admin.service.ConfigLogService;
 

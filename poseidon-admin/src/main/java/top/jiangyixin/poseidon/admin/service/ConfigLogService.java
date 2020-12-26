@@ -1,7 +1,7 @@
 package top.jiangyixin.poseidon.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import top.jiangyixin.poseidon.admin.entity.ConfigLog;
+import top.jiangyixin.poseidon.admin.pojo.entity.ConfigLog;
 
 /**
  * 配置变更日志 Service 接口

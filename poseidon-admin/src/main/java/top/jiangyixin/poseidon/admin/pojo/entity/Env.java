@@ -1,27 +1,26 @@
-package top.jiangyixin.poseidon.admin.entity;
+package top.jiangyixin.poseidon.admin.pojo.entity;
+
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import lombok.Builder;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.Date;
 
 /**
- * 配置表
+ * 环境表
  * @author jiangyixin
  * @since 2020-12-13
  */
 @Data
-@Builder
-public class Config {
+@TableName("poseidon_env")
+public class Env {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String envCode;
-    private String projectCode;
-    private String key;
-    private String value;
-    private String desc;
+    private String code;
+    private String name;
+    private Integer sort;
     private Date gmtCreate;
     private Date gmtModified;
 }

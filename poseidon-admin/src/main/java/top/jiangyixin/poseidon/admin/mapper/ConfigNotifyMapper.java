@@ -2,13 +2,15 @@ package top.jiangyixin.poseidon.admin.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Repository;
-import top.jiangyixin.poseidon.admin.pojo.entity.ConfigLog;
+import top.jiangyixin.poseidon.admin.pojo.entity.ConfigNotify;
 
 /**
- * 配置日志变更表 Mapper 接口
+ * TODO
+ *
  * @author jiangyixin
- * @since 2020-12-14
+ * @version 1.0
+ * @date 2020/12/26
  */
 @Repository
-public interface ConfigLogMapper extends BaseMapper<ConfigLog> {
+public interface ConfigNotifyMapper extends BaseMapper<ConfigNotify> {
 }

@@ -9,20 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.async.DeferredResult;
-import top.jiangyixin.poseidon.admin.entity.Config;
-import top.jiangyixin.poseidon.admin.entity.Env;
-import top.jiangyixin.poseidon.admin.entity.Project;
-import top.jiangyixin.poseidon.admin.entity.User;
-import top.jiangyixin.poseidon.admin.mapper.ConfigMapper;
-import top.jiangyixin.poseidon.admin.mapper.EnvMapper;
-import top.jiangyixin.poseidon.admin.mapper.ProjectMapper;
+import top.jiangyixin.poseidon.admin.mapper.*;
+import top.jiangyixin.poseidon.admin.pojo.entity.*;
 import top.jiangyixin.poseidon.admin.pojo.query.ConfigQuery;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.ConfigService;
 import top.jiangyixin.poseidon.admin.service.UserService;
 import top.jiangyixin.poseidon.core.util.PropertyUtils;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +36,8 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	private final ConfigMapper configMapper;
 	private final ProjectMapper projectMapper;
 	private final EnvMapper envMapper;
+	private final ConfigNotifyMapper configNotifyMapper;
+	private final ConfigLogMapper configLogMapper;
 	private final static Logger logger = LoggerFactory.getLogger(ConfigServiceImpl.class);
 	public final static String DEFAULT_KEY_NAME = "value";
 	
@@ -63,38 +59,66 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	
 	@Autowired
 	public ConfigServiceImpl(UserService userService, ConfigMapper configMapper,
-	                         ProjectMapper projectMapper, EnvMapper envMapper) {
+	                         ProjectMapper projectMapper, EnvMapper envMapper,
+							 ConfigNotifyMapper configNotifyMapper, ConfigLogMapper configLogMapper) {
 		this.userService = userService;
 		this.configMapper = configMapper;
 		this.projectMapper = projectMapper;
 		this.envMapper = envMapper;
+		this.configNotifyMapper = configNotifyMapper;
+		this.configLogMapper = configLogMapper;
 	}
 	
 	@Override
 	public R<String> add(Config config, User user) {
-		if (StringUtils.isEmpty(config.getProjectCode())) {
+		if (StringUtils.isEmpty(config.getProject())) {
 			return R.fail("Project不能为空");
 		}
-		if (StringUtils.isEmpty(config.getEnvCode())) {
+		if (StringUtils.isEmpty(config.getEnv())) {
 			return R.fail("ENV不能为空");
+		}
+		if (StringUtils.isEmpty(config.getDesc())) {
+			return R.fail("配置描述不能为空");
 		}
 		if (userService.hasProjectPermission(user, config)) {
 			return R.fail("您没有该项目的配置权限,请联系管理员开通");
 		}
 		Env env = envMapper.selectOne(new QueryWrapper<Env>()
-				.eq("code", config.getEnvCode()));
+				.eq("code", config.getEnv()));
 		if (env == null) {
-			return R.fail("Env [" + config.getEnvCode() + "]不存在");
+			return R.fail("Env [" + config.getEnv() + "]不存在");
 		}
 		Project project = projectMapper.selectOne(new QueryWrapper<Project>()
-				.eq("code", config.getProjectCode()));
+				.eq("code", config.getProject()));
 		if (project == null) {
-			return R.fail("Project [" + config.getProjectCode() + "]不存在");
+			return R.fail("Project [" + config.getProject() + "]不存在");
 		}
+		// 去除key中的空格
 		config.setKey(config.getKey().trim());
-		
-		
-		return null;
+		Config cfg = configMapper.selectOne(new QueryWrapper<Config>()
+				.eq("env", config.getEnv())
+				.eq("project", config.getProject())
+				.eq("key", config.getKey()));
+		if (cfg != null) {
+			return R.fail("配置Key已经存在，不可重复添加");
+		}
+		if (config.getValue() == null) {
+			config.setValue("");
+		}
+
+		configMapper.insert(config);
+
+		// 创建config change log
+		ConfigLog configLog = new ConfigLog();
+		configLog.setEnv(config.getEnv());
+		configLog.setProject(config.getProject());
+		configLog.setKey(config.getKey());
+		configLog.setDesc(config.getDesc().concat("[新增配置]"));
+		configLog.setNewValue(config.getValue());
+		configLogMapper.insert(configLog);
+
+
+		return R.success();
 	}
 	
 	@Override

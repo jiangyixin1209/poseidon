@@ -1,7 +1,7 @@
 package top.jiangyixin.poseidon.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import top.jiangyixin.poseidon.admin.entity.Project;
+import top.jiangyixin.poseidon.admin.pojo.entity.Project;
 
 /**
  * 项目 Service 接口
