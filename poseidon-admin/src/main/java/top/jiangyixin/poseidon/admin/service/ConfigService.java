@@ -18,9 +18,25 @@ public interface ConfigService extends IService<Config> {
 	 * 新增配置
 	 * @param config        config
 	 * @param user          login user
-	 * @return
+	 * @return				R
 	 */
 	R<String> add(Config config, User user);
+
+	/**
+	 * 更新配置
+	 * @param config		config
+	 * @param user			login user
+	 * @return				R<String>
+	 */
+	R<String> update(Config config, User user);
+
+	/**
+	 * 删除配置
+	 * @param config		config
+	 * @param user			login user
+	 * @return				R<String>
+	 */
+	R<String> delete(Config config, User user);
 	
 	/**
 	 * 获取配置

@@ -1,6 +1,7 @@
 package top.jiangyixin.poseidon.admin.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import top.jiangyixin.poseidon.admin.pojo.entity.ConfigNotify;
 
@@ -13,4 +14,11 @@ import top.jiangyixin.poseidon.admin.pojo.entity.ConfigNotify;
  */
 @Repository
 public interface ConfigNotifyMapper extends BaseMapper<ConfigNotify> {
+
+    /**
+     * 清除过期的config变更Notify
+     * @param timeout           过期时间
+     * @return                  影响行数
+     */
+    int cleanExpireNotify(@Param("timeout") int timeout);
 }
