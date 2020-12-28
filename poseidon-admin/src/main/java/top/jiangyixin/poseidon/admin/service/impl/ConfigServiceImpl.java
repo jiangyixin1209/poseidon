@@ -1,6 +1,7 @@
 package top.jiangyixin.poseidon.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -243,7 +244,28 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	
 	@Override
 	public DeferredResult<R<String>> monitor(ConfigQuery configQuery) {
-		return null;
+		DeferredResult<R<String>> deferredResult =
+				new DeferredResult<>(DEFAULT_CLEAN_TIME * 1000L, R.success());
+		if (accessToken != null && accessToken.trim().length() > 0 && !accessToken.equals(configQuery.getAccessToken())) {
+			deferredResult.setResult(R.fail("AccessToken Invalid!"));
+			return deferredResult;
+		}
+		if (configQuery.getEnv() == null || configQuery.getEnv().trim().length() == 0) {
+			deferredResult.setResult(R.fail("Env Invalid!"));
+			return deferredResult;
+		}
+		if (configQuery.getKeys() == null || configQuery.getKeys().size() == 0) {
+			deferredResult.setResult(R.fail("Keys Invalid!"));
+			return deferredResult;
+		}
+		for (String key : configQuery.getKeys()) {
+			String[] result = key.split("_");
+			String configFilepath = getConfigFilepath(configQuery.getEnv(), result[0], result[1]);
+			List<DeferredResult<R<String>>> deferredResultList = configDeferredResult
+					.computeIfAbsent(configFilepath, k -> new ArrayList<>());
+			configDeferredResult.put(configFilepath, deferredResultList);
+		}
+		return deferredResult;
 	}
 
 	@Override
@@ -379,10 +401,78 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 				}
 			}
 		});
+		
+		// 同步全量的 config-data，缓存本地文件
+		// 清除被删除的config的 config-data file
+		executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				while (isLoopMonitor) {
+					try {
+						long sleepSecond = DEFAULT_CLEAN_TIME - (System.currentTimeMillis()/1000) % DEFAULT_CLEAN_TIME;
+						if (sleepSecond >0 && sleepSecond < DEFAULT_CLEAN_TIME) {
+							TimeUnit.SECONDS.sleep(sleepSecond);
+						}
+					} catch (InterruptedException e) {
+						logger.error(e.getMessage());
+					}
+					
+					try {
+						List<String> configDataFileList = new ArrayList<>();
+						int page = 1;
+						int pageSize = 1000;
+						Page<Config> configPage = new Page<>(page, pageSize);
+						configMapper.selectPage(configPage, null);
+						List<Config> configs = configPage.getRecords();
+						while (configs != null && configs.size() > 0) {
+							for (Config config : configs) {
+								String configDataFile = writeConfigToFile(config.getEnv(), config.getProject(),
+										config.getKey(), config.getValue());
+								configDataFileList.add(configDataFile);
+							}
+							page += 1;
+							configPage = new Page<>(page, pageSize);
+							configMapper.selectPage(configPage, null);
+							configs = configPage.getRecords();
+						}
+						cleanConfigFile(new File(configDir), configDataFileList);
+					} catch (Exception e) {
+						logger.error(e.getMessage());
+					}
+				}
+			}
+		});
 	}
 
 	public void stopLoopMonitor() {
 		isLoopMonitor = false;
 		executorService.shutdown();
+	}
+	
+	/**
+	 * 清理被删除config的本地mirror文件
+	 * @param configFileDir             根目录
+	 * @param configDataFileList        现存config所有config file列表
+	 */
+	public void cleanConfigFile(File configFileDir, final List<String> configDataFileList) {
+		if (!configFileDir.exists() || configFileDir.list() == null
+				|| Objects.requireNonNull(configFileDir.list()).length == 0) {
+			return;
+		}
+		File[] configFileList = configFileDir.listFiles();
+		for (File configFile: Objects.requireNonNull(configFileList)) {
+			if (configFile.isFile() && !configDataFileList.contains(configFile.getPath())) {
+				configFile.delete();
+				logger.info("Poseidon cleanConfigFile delete configFile=[{}]", configFile.getPath());
+			}
+			if (configFile.isDirectory()) {
+				if (configFileDir.listFiles() != null
+						&& Objects.requireNonNull(configFileDir.listFiles()).length > 0) {
+					cleanConfigFile(configFileDir, configDataFileList);
+				} else {
+					configFile.delete();
+				}
+			}
+		}
 	}
 }
