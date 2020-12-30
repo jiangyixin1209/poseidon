@@ -2,7 +2,30 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.jiangyixin.poseidon.admin.mapper.ConfigNotifyMapper">
+    <sql id="base_column_list">
+        `id`,
+        `env`,
+        `project`,
+        `key`,
+        `value`,
+        `gmt_create`,
+        `gmt_modified`
+    </sql>
     <delete id="cleanExpireNotify">
         DELETE FROM config_notify WHERE NOW() > DATE_ADD(gmt_create, Interval #{timeout} SECOND);
     </delete>
+    <select id="selectAllNotInIdList" resultType="top.jiangyixin.poseidon.admin.pojo.entity.ConfigNotify">
+        SELECT
+            <include refid="base_column_list" />
+        FROM config_notify
+        <where>
+            <if test="ids != null and ids.size() != 0">
+                `id` not in
+                <foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+                ORDER BY `id`
+            </if>
+        </where>
+    </select>
 </mapper>

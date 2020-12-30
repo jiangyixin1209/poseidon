@@ -21,7 +21,7 @@ public class Config {
     private String project;
     private String key;
     private String value;
-    private String desc;
+    private String description;
     private Date gmtCreate;
     private Date gmtModified;
 }

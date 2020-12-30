@@ -19,7 +19,7 @@ public class ConfigLog {
     private String env;
     private String project;
     private String key;
-    private String desc;
+    private String description;
     private String oldValue;
     private String newValue;
     private String optUser;

@@ -92,7 +92,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		if (StringUtils.isEmpty(config.getKey())) {
 			return R.fail("Key不能为空");
 		}
-		if (StringUtils.isEmpty(config.getDesc())) {
+		if (StringUtils.isEmpty(config.getDescription())) {
 			return R.fail("配置描述不能为空");
 		}
 		if (userService.hasProjectPermission(user, config)) {
@@ -128,7 +128,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		configLog.setEnv(config.getEnv());
 		configLog.setProject(config.getProject());
 		configLog.setKey(config.getKey());
-		configLog.setDesc(config.getDesc().concat("[新增配置]"));
+		configLog.setDescription(config.getDescription().concat("[新增配置]"));
 		configLog.setNewValue(config.getValue());
 		configLogMapper.insert(configLog);
 
@@ -146,7 +146,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		if (StringUtils.isEmpty(config.getEnv())) {
 			return R.fail("Env不能为空");
 		}
-		if (StringUtils.isEmpty(config.getDesc())) {
+		if (StringUtils.isEmpty(config.getDescription())) {
 			return R.fail("配置描述不能为空");
 		}
 		if (userService.hasProjectPermission(user, config)) {
@@ -165,7 +165,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 			config.setValue("");
 		}
 		String oldValue = existConfig.getValue();
-		existConfig.setDesc(config.getDesc());
+		existConfig.setDescription(config.getDescription());
 		existConfig.setValue(config.getValue());
 		int res = configMapper.updateById(existConfig);
 		if (res < 1) {
@@ -176,7 +176,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		configLog.setEnv(config.getEnv());
 		configLog.setProject(config.getProject());
 		configLog.setKey(config.getKey());
-		configLog.setDesc(config.getDesc().concat("[更新配置]"));
+		configLog.setDescription(config.getDescription().concat("[更新配置]"));
 		configLog.setOldValue(oldValue);
 		configLog.setNewValue(config.getValue());
 		configLogMapper.insert(configLog);
@@ -375,7 +375,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		executorService.execute(() -> {
 			while (isLoopMonitor) {
 				try {
-					List<ConfigNotify> notifyList = configNotifyMapper.selectBatchIds(readNotifyIdList);
+					List<ConfigNotify> notifyList = configNotifyMapper.selectAllNotInIdList(readNotifyIdList);
 					if (notifyList != null && notifyList.size() > 0) {
 						for (ConfigNotify notify : notifyList) {
 							readNotifyIdList.add(notify.getId());

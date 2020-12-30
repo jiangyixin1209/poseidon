@@ -7,3 +7,10 @@ spring:
     password: gllue123
 server:
   port: 8000
+
+
+poseidon:
+  conf:
+    dir:
+  access:
+    token:

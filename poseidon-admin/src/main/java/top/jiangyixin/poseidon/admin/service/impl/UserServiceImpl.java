@@ -22,6 +22,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			return true;
 		}
 		String[] permissions = StringUtils.split(user.getPermissionData(), ",");
-		return ArrayUtils.contains(permissions, config.getEnvCode().concat("#").concat(config.getProjectCode()));
+		return ArrayUtils.contains(permissions, config.getEnv().concat("#").concat(config.getProject()));
 	}
 }
