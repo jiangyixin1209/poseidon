@@ -7,7 +7,10 @@ import org.springframework.stereotype.Service;
 import top.jiangyixin.poseidon.admin.pojo.entity.Config;
 import top.jiangyixin.poseidon.admin.pojo.entity.User;
 import top.jiangyixin.poseidon.admin.mapper.UserMapper;
+import top.jiangyixin.poseidon.admin.pojo.param.LoginParam;
+import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.UserService;
+import top.jiangyixin.poseidon.admin.util.JwtUtil;
 
 /**
  * 用户 Service 接口实现
@@ -23,5 +26,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		}
 		String[] permissions = StringUtils.split(user.getPermissionData(), ",");
 		return ArrayUtils.contains(permissions, config.getEnv().concat("#").concat(config.getProject()));
+	}
+	
+	@Override
+	public R<String> login(LoginParam loginParam) {
+		// 先简单实现
+		if ("admin".equals(loginParam.getUsername()) && "admin".equals(loginParam.getPassword())) {
+			return R.success(JwtUtil.createJwt())
+		}
+		return null;
 	}
 }
