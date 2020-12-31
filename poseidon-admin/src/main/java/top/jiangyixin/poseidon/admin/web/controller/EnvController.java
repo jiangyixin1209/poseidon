@@ -1,4 +1,4 @@
-package top.jiangyixin.poseidon.admin.controller;
+package top.jiangyixin.poseidon.admin.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

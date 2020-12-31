@@ -1,13 +1,17 @@
-package top.jiangyixin.poseidon.admin.controller;
+package top.jiangyixin.poseidon.admin.web.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.jiangyixin.poseidon.admin.pojo.param.LoginParam;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
+import top.jiangyixin.poseidon.admin.service.UserService;
+
+import javax.annotation.Resource;
 
 /**
  * TODO
@@ -20,9 +24,12 @@ import top.jiangyixin.poseidon.admin.pojo.vo.R;
 @RequestMapping
 public class IndexController {
 	
+	@Resource
+	private UserService userService;
+	
 	@PostMapping("/login")
 	@ApiOperation("登录接口")
-	public R login(@RequestBody LoginParam loginParam) {
-	
+	public R<String> login(@Validated @RequestBody LoginParam loginParam) {
+		return userService.login(loginParam);
 	}
 }

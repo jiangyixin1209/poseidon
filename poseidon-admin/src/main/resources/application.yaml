@@ -10,6 +10,7 @@ server:
 
 
 poseidon:
+  secret: 123456789
   conf:
     dir:
   access:
