@@ -71,3 +71,6 @@ CREATE TABLE `config_notify`(
     `gmt_modified` DATETIME NOT NULL COMMENT '修改时间',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '配置变更通知表';
+
+
+INSERT INTO `user` values (1, 'admin', md5('admin'), 0, now(), now());

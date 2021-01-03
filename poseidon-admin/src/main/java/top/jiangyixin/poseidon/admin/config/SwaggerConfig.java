@@ -42,7 +42,7 @@ public class SwaggerConfig {
 		List<Parameter> parameters = new ArrayList<>();
 		
 		ParameterBuilder tokenPar = new ParameterBuilder();
-		tokenPar.name("Authorization")
+		tokenPar.name("POSEIDON_TOKEN")
 				.description("令牌")
 				.modelRef(new ModelRef("string"))
 				.parameterType("header")

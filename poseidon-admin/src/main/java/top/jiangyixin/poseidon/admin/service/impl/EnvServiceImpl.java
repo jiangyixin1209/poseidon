@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import top.jiangyixin.poseidon.admin.pojo.entity.Env;
 import top.jiangyixin.poseidon.admin.mapper.EnvMapper;
+import top.jiangyixin.poseidon.admin.pojo.param.EnvParam;
 import top.jiangyixin.poseidon.admin.pojo.vo.EnvVo;
+import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.EnvService;
 import top.jiangyixin.poseidon.admin.util.PojoUtil;
 
@@ -24,5 +26,17 @@ public class EnvServiceImpl extends ServiceImpl<EnvMapper, Env> implements EnvSe
 	public List<EnvVo> findAll() {
 		List<Env> envList = this.list(new QueryWrapper<Env>().orderByDesc("sort"));
 		return PojoUtil.copyList(envList, EnvVo.class);
+	}
+
+	@Override
+	public R<?> create(EnvParam envParam) {
+		Env env = this.getOne(new QueryWrapper<Env>().eq("code", envParam.getCode()));
+		if (env != null) {
+			return R.fail("code已存在");
+		}
+		env = PojoUtil.copy(envParam, Env.class);
+		this.saveOrUpdate(env);
+		EnvVo envVo = PojoUtil.copy(env, EnvVo.class);
+		return new R<>(R.SUCCESS_CODE, envVo);
 	}
 }

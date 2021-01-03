@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mysql://127.0.0.1/poseidon
     username: root
-    password: gllue123
+    password: 123456
 server:
   port: 8000
 

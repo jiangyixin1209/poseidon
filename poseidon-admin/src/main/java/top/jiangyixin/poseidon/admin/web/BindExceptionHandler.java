@@ -5,6 +5,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
+import top.jiangyixin.poseidon.core.exception.PoseidonException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -26,5 +27,10 @@ public class BindExceptionHandler {
 			sb.append(errorMessage.getField()).append(": ").append(errorMessage.getDefaultMessage()).append(", ");
 		}
 		return R.fail(sb.toString());
+	}
+
+	@ExceptionHandler(PoseidonException.class)
+	public R<String> handlePoseidonException(HttpServletRequest request, PoseidonException poseidonException) {
+		return R.fail(poseidonException.getMessage());
 	}
 }

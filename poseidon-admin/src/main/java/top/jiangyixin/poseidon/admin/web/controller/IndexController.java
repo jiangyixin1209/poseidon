@@ -19,7 +19,7 @@ import javax.annotation.Resource;
  * @author jiangyixin
  * @date 2020/12/30 下午5:05
  */
-@Api(tags = "共用接口")
+@Api(tags = "公用接口")
 @RestController
 @RequestMapping
 public class IndexController {

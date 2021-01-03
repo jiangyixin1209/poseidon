@@ -15,6 +15,15 @@ import java.util.Date;
 @Data
 @Builder
 public class User {
+    /**
+     * 管理员
+     */
+    public final static int ADMIN = 0;
+    /**
+     * 普通用户
+     */
+    public final static int NORMAL = 1;
+
     @TableId(type = IdType.AUTO)
     private Long id;
     private String username;

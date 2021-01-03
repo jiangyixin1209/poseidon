@@ -1,9 +1,11 @@
 package top.jiangyixin.poseidon.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 import top.jiangyixin.poseidon.admin.config.PoseidonConfig;
 import top.jiangyixin.poseidon.admin.pojo.entity.Config;
 import top.jiangyixin.poseidon.admin.pojo.entity.User;
@@ -26,7 +28,9 @@ import java.util.Map;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 	
 	@Resource
-	PoseidonConfig poseidonConfig;
+	private PoseidonConfig poseidonConfig;
+	@Resource
+	private UserMapper userMapper;
 	
 	@Override
 	public boolean hasProjectPermission(User user, Config config) {
@@ -40,11 +44,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	@Override
 	public R<String> login(LoginParam loginParam) {
 		// 先简单实现
-		if ("admin".equals(loginParam.getUsername()) && "admin".equals(loginParam.getPassword())) {
-			Map<String, Object> claims = new HashMap<>();
-			claims.put("id", "1");
-			return R.success(JwtUtil.createJwt(poseidonConfig.getSecret(), "user", claims, -1));
+		User user = userMapper.selectOne(new QueryWrapper<User>()
+				.eq("username", loginParam.getUsername())
+				.eq("password", DigestUtils.md5DigestAsHex(loginParam.getPassword().getBytes())));
+		if (user == null) {
+			return R.fail("登录失败，用户名或密码错误");
 		}
-		return R.fail("登录失败");
+		Map<String, Object> claims = new HashMap<>();
+		claims.put("id", user.getId());
+		return R.success(JwtUtil.createJwt(poseidonConfig.getSecret(), "user", claims, -1));
 	}
 }
