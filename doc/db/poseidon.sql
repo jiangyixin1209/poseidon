@@ -73,4 +73,9 @@ CREATE TABLE `config_notify`(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '配置变更通知表';
 
 
-INSERT INTO `user` values (1, 'admin', md5('admin'), 0, now(), now());
+INSERT INTO `poseidon`.`user` values (1, 'admin', md5('admin'), 0, '', now(), now());
+INSERT INTO `poseidon`.`env`(`id`, `code`, `name`, `sort`, `gmt_create`, `gmt_modified`) VALUES (1, 'test', '测试环境', 0, now(), now());
+INSERT INTO `poseidon`.`env`(`id`, `code`, `name`, `sort`, `gmt_create`, `gmt_modified`) VALUES (2, 'dev', '开发环境', 0, now(), now());
+INSERT INTO `poseidon`.`env`(`id`, `code`, `name`, `sort`, `gmt_create`, `gmt_modified`) VALUES (3, 'prod', '生产环境', 0, now(), now());
+INSERT INTO `poseidon`.`env`(`id`, `code`, `name`, `sort`, `gmt_create`, `gmt_modified`) VALUES (4, 'uat', '集成测试环境', 0, now(), now());
+INSERT INTO `poseidon`.`project`(`id`, `code`, `name`, `gmt_create`, `gmt_modified`) VALUES (1, 'default', '默认', now(), now());

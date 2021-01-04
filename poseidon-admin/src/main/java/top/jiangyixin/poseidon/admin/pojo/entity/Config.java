@@ -1,10 +1,13 @@
 package top.jiangyixin.poseidon.admin.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -13,7 +16,6 @@ import java.util.Date;
  * @since 2020-12-13
  */
 @Data
-@Builder
 public class Config {
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -22,6 +24,8 @@ public class Config {
     private String key;
     private String value;
     private String description;
-    private Date gmtCreate;
-    private Date gmtModified;
+    @TableField(value = "gmt_create", fill = FieldFill.INSERT)
+    private LocalDateTime gmtCreate;
+    @TableField(value = "gmt_modified", fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime gmtModified;
 }

@@ -4,17 +4,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import top.jiangyixin.poseidon.admin.annotation.Permission;
-import top.jiangyixin.poseidon.admin.pojo.entity.Env;
+import top.jiangyixin.poseidon.admin.pojo.group.Insert;
 import top.jiangyixin.poseidon.admin.pojo.param.EnvParam;
 import top.jiangyixin.poseidon.admin.pojo.vo.EnvVo;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.EnvService;
-import top.jiangyixin.poseidon.admin.util.PojoUtil;
 
 import java.util.List;
 
@@ -44,7 +40,7 @@ public class EnvController {
 	@ApiOperation("新增Env")
 	@PostMapping("/add")
 	@Permission(needAdmin = true)
-	public R<?> create(@Validated EnvParam envParam){
+	public R<?> create(@Validated({Insert.class}) @RequestBody EnvParam envParam){
 		return envService.create(envParam);
 	}
 
