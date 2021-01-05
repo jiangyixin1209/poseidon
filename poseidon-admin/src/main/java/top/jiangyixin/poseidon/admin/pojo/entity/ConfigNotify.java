@@ -1,10 +1,13 @@
 package top.jiangyixin.poseidon.admin.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -20,8 +23,11 @@ public class ConfigNotify {
     private Long id;
     private String env;
     private String project;
+    @TableField(value = "`key`")
     private String key;
     private String value;
-    private Date gmtCreate;
-    private Date gmtModified;
+    @TableField(value = "gmt_create", fill = FieldFill.INSERT)
+    private LocalDateTime gmtCreate;
+    @TableField(value = "gmt_modified", fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime gmtModified;
 }

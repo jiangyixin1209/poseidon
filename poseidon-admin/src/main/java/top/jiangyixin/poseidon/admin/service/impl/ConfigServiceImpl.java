@@ -14,10 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.async.DeferredResult;
 import top.jiangyixin.poseidon.admin.mapper.*;
 import top.jiangyixin.poseidon.admin.pojo.entity.*;
+import top.jiangyixin.poseidon.admin.pojo.param.ConfigParam;
 import top.jiangyixin.poseidon.admin.pojo.query.ConfigQuery;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.ConfigService;
 import top.jiangyixin.poseidon.admin.service.UserService;
+import top.jiangyixin.poseidon.admin.util.PojoUtil;
 import top.jiangyixin.poseidon.core.util.PropertyUtils;
 
 import java.io.File;
@@ -30,15 +32,14 @@ import java.util.concurrent.*;
  * @since 2020-12-14
  */
 @Service
-public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> implements ConfigService, InitializingBean, DisposableBean {
+public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> implements ConfigService {
+	private final static Logger logger = LoggerFactory.getLogger(ConfigServiceImpl.class);
 	
 	private final UserService userService;
-	private final ConfigMapper configMapper;
 	private final ProjectMapper projectMapper;
 	private final EnvMapper envMapper;
 	private final ConfigNotifyMapper configNotifyMapper;
 	private final ConfigLogMapper configLogMapper;
-	private final static Logger logger = LoggerFactory.getLogger(ConfigServiceImpl.class);
 	public final static String DEFAULT_KEY_NAME = "value";
 	/**
 	 * 访问access token
@@ -67,14 +68,13 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	/**
 	 * 每30秒清理一次 readNotifyIdList
 	 */
-	private final static int DEFAULT_CLEAN_TIME = 30;
+	public final static int DEFAULT_CLEAN_TIME = 30;
 	
 	@Autowired
-	public ConfigServiceImpl(UserService userService, ConfigMapper configMapper,
+	public ConfigServiceImpl(UserService userService,
 	                         ProjectMapper projectMapper, EnvMapper envMapper,
 							 ConfigNotifyMapper configNotifyMapper, ConfigLogMapper configLogMapper) {
 		this.userService = userService;
-		this.configMapper = configMapper;
 		this.projectMapper = projectMapper;
 		this.envMapper = envMapper;
 		this.configNotifyMapper = configNotifyMapper;
@@ -82,18 +82,10 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	}
 	
 	@Override
-	public R<String> add(Config config, User user) {
-		if (StringUtils.isEmpty(config.getEnv())) {
-			return R.fail("ENV不能为空");
-		}
-		if (StringUtils.isEmpty(config.getProject())) {
-			return R.fail("Project不能为空");
-		}
-		if (StringUtils.isEmpty(config.getKey())) {
-			return R.fail("Key不能为空");
-		}
-		if (StringUtils.isEmpty(config.getDescription())) {
-			return R.fail("配置描述不能为空");
+	public R<String> add(ConfigParam configParam, User user) {
+		Config config = PojoUtil.copy(configParam, Config.class);
+		if (config == null) {
+			return R.fail("Error");
 		}
 		if (userService.hasProjectPermission(user, config)) {
 			return R.fail("您没有该项目的配置权限,请联系管理员开通");
@@ -110,18 +102,17 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		}
 		// 去除key中的空格
 		config.setKey(config.getKey().trim());
-		Config cfg = configMapper.selectOne(new QueryWrapper<Config>()
+		Config cfg = getOne(new QueryWrapper<Config>()
 				.eq("env", config.getEnv())
 				.eq("project", config.getProject())
-				.eq("key", config.getKey()));
+				.eq("`key`", config.getKey()));
 		if (cfg != null) {
 			return R.fail("配置Key已经存在，不可重复添加");
 		}
 		if (config.getValue() == null) {
 			config.setValue("");
 		}
-
-		configMapper.insert(config);
+		save(config);
 
 		// 创建config change log
 		ConfigLog configLog = new ConfigLog();
@@ -130,6 +121,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		configLog.setKey(config.getKey());
 		configLog.setDescription(config.getDescription().concat("[新增配置]"));
 		configLog.setNewValue(config.getValue());
+		configLog.setOptUser(user.getUsername());
 		configLogMapper.insert(configLog);
 
 		// config notify
@@ -152,7 +144,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		if (userService.hasProjectPermission(user, config)) {
 			return R.fail("您没有该项目的配置权限,请联系管理员开通");
 		}
-		Config existConfig = configMapper.selectOne(new QueryWrapper<Config>()
+		Config existConfig = getOne(new QueryWrapper<Config>()
 				.eq("env", config.getEnv())
 				.eq("project", config.getProject())
 				.eq("key", config.getKey())
@@ -167,8 +159,8 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		String oldValue = existConfig.getValue();
 		existConfig.setDescription(config.getDescription());
 		existConfig.setValue(config.getValue());
-		int res = configMapper.updateById(existConfig);
-		if (res < 1) {
+		boolean res = updateById(existConfig);
+		if (!res) {
 			return R.fail();
 		}
 		// 创建config change log
@@ -200,7 +192,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		if (userService.hasProjectPermission(user, config)) {
 			return R.fail("您没有该项目的配置权限,请联系管理员开通");
 		}
-		configMapper.delete(new QueryWrapper<Config>()
+		remove(new QueryWrapper<Config>()
 				.eq("env", config.getEnv())
 				.eq("project", config.getProject())
 				.eq("key", config.getKey())
@@ -267,15 +259,12 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		}
 		return deferredResult;
 	}
-
+	
 	@Override
-	public void destroy() throws Exception {
-		stopLoopMonitor();
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		startLoopMonitor();
+	public List<Config> listByPage(int page, int pageSize, QueryWrapper<Config> configQueryWrapper) {
+		Page<Config> configPage = new Page<>(page, pageSize);
+		this.baseMapper.selectPage(configPage, configQueryWrapper);
+		return configPage.getRecords();
 	}
 	
 	/**
@@ -325,7 +314,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	 * @param value             value
 	 * @return                  本地文件路径
 	 */
-	public String writeConfigToFile(String env, String key, String project, String value) {
+	public String writeConfigToFile(String env,  String project, String key, String value) {
 		String configFilepath = getConfigFilepath(env, project, key);
 		Properties properties = PropertyUtils.readProperty(configFilepath);
 		
@@ -370,84 +359,6 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		configNotify.setValue(value);
 		configNotifyMapper.insert(configNotify);
 	}
-
-	public void startLoopMonitor() {
-		executorService.execute(() -> {
-			while (isLoopMonitor) {
-				try {
-					List<ConfigNotify> notifyList = configNotifyMapper.selectAllNotInIdList(readNotifyIdList);
-					if (notifyList != null && notifyList.size() > 0) {
-						for (ConfigNotify notify : notifyList) {
-							readNotifyIdList.add(notify.getId());
-							// sync local file
-							writeConfigToFile(notify.getEnv(), notify.getProject(), notify.getKey(),notify.getValue());
-						}
-					}
-					// 清除旧的configNotify
-					if ((System.currentTimeMillis() / 1000) % DEFAULT_CLEAN_TIME == 0) {
-						configNotifyMapper.cleanExpireNotify(DEFAULT_CLEAN_TIME);
-						readNotifyIdList.clear();
-					}
-				} catch (Exception e) {
-					logger.error(e.getMessage());
-				}
-				// 一秒执行一次
-				try {
-					TimeUnit.SECONDS.sleep(1);
-				} catch (InterruptedException e) {
-					if (isLoopMonitor) {
-						logger.error(e.getMessage());
-					}
-				}
-			}
-		});
-		
-		// 同步全量的 config-data，缓存本地文件
-		// 清除被删除的config的 config-data file
-		executorService.execute(new Runnable() {
-			@Override
-			public void run() {
-				while (isLoopMonitor) {
-					try {
-						long sleepSecond = DEFAULT_CLEAN_TIME - (System.currentTimeMillis()/1000) % DEFAULT_CLEAN_TIME;
-						if (sleepSecond >0 && sleepSecond < DEFAULT_CLEAN_TIME) {
-							TimeUnit.SECONDS.sleep(sleepSecond);
-						}
-					} catch (InterruptedException e) {
-						logger.error(e.getMessage());
-					}
-					
-					try {
-						List<String> configDataFileList = new ArrayList<>();
-						int page = 1;
-						int pageSize = 1000;
-						Page<Config> configPage = new Page<>(page, pageSize);
-						configMapper.selectPage(configPage, null);
-						List<Config> configs = configPage.getRecords();
-						while (configs != null && configs.size() > 0) {
-							for (Config config : configs) {
-								String configDataFile = writeConfigToFile(config.getEnv(), config.getProject(),
-										config.getKey(), config.getValue());
-								configDataFileList.add(configDataFile);
-							}
-							page += 1;
-							configPage = new Page<>(page, pageSize);
-							configMapper.selectPage(configPage, null);
-							configs = configPage.getRecords();
-						}
-						cleanConfigFile(new File(configDir), configDataFileList);
-					} catch (Exception e) {
-						logger.error(e.getMessage());
-					}
-				}
-			}
-		});
-	}
-
-	public void stopLoopMonitor() {
-		isLoopMonitor = false;
-		executorService.shutdown();
-	}
 	
 	/**
 	 * 清理被删除config的本地mirror文件
@@ -474,5 +385,13 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 				}
 			}
 		}
+	}
+	
+	public List<Long> getReadNotifyIdList() {
+		return readNotifyIdList;
+	}
+	
+	public String getConfigDir() {
+		return configDir;
 	}
 }

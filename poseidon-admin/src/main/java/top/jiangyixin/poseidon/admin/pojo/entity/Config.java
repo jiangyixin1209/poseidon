@@ -21,6 +21,7 @@ public class Config {
     private Long id;
     private String env;
     private String project;
+    @TableField(value = "`key`")
     private String key;
     private String value;
     private String description;

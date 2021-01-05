@@ -107,8 +107,8 @@ public class PropertyUtils {
 		try {
 			File file = new File(propertyFilename);
 			if (!file.exists()) {
-				boolean mkdirs = file.getParentFile().mkdirs();
-				if (!mkdirs) {
+				file.getParentFile().mkdirs();
+				if (!file.getParentFile().exists()) {
 					throw new RuntimeException("mkdir dir error");
 				}
 			}

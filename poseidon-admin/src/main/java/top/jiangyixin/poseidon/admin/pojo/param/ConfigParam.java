@@ -27,9 +27,17 @@ public class ConfigParam {
 	private String env;
 	
 	@ApiModelProperty("所属项目")
-	@NotNull(groups = {Insert.class})
+	@NotNull(groups = {Insert.class, Update.class}, message = "所属项目不能为空")
 	private String project;
+	
+	@ApiModelProperty("配置名")
+	@NotNull(groups = {Insert.class, Update.class}, message = "配置名不能为空")
 	private String key;
+	
+	@ApiModelProperty("配置值")
 	private String value;
+	
+	@ApiModelProperty("配置描述")
+	@NotNull(groups = {Insert.class, Update.class}, message = "配置描述不能为空")
 	private String description;
 }
