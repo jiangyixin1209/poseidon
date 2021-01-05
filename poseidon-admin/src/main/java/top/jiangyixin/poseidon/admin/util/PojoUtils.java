@@ -11,7 +11,7 @@ import java.util.List;
  * @author jiangyixin
  * @date 2020/12/23 下午2:26
  */
-public class PojoUtil {
+public class PojoUtils {
 	
 	public static <T, F> List<F> copyList(List<T> origins, Class<F> clazz) {
 		List<F> results = new ArrayList<>();

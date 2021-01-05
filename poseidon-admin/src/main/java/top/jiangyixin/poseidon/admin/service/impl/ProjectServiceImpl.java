@@ -9,7 +9,7 @@ import top.jiangyixin.poseidon.admin.pojo.param.ProjectParam;
 import top.jiangyixin.poseidon.admin.pojo.vo.ProjectVo;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.ProjectService;
-import top.jiangyixin.poseidon.admin.util.PojoUtil;
+import top.jiangyixin.poseidon.admin.util.PojoUtils;
 
 /**
  * 项目 Service 接口实现
@@ -26,9 +26,9 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
 		if (project != null) {
 			return R.fail("项目code已存在");
 		}
-		project = PojoUtil.copy(projectParam, Project.class);
+		project = PojoUtils.copy(projectParam, Project.class);
 		save(project);
-		ProjectVo projectVo = PojoUtil.copy(project, ProjectVo.class);
+		ProjectVo projectVo = PojoUtils.copy(project, ProjectVo.class);
 		return new R<>(R.SUCCESS_CODE, projectVo);
 	}
 }

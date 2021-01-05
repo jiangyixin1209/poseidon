@@ -13,7 +13,7 @@ import top.jiangyixin.poseidon.admin.mapper.UserMapper;
 import top.jiangyixin.poseidon.admin.pojo.param.LoginParam;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.UserService;
-import top.jiangyixin.poseidon.admin.util.JwtUtil;
+import top.jiangyixin.poseidon.admin.util.JwtUtils;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -52,6 +52,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		}
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("id", user.getId());
-		return R.success(JwtUtil.createJwt(poseidonConfig.getSecret(), "user", claims, -1));
+		return R.success(JwtUtils.createJwt(poseidonConfig.getSecret(), "user", claims, -1));
 	}
 }

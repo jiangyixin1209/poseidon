@@ -9,7 +9,7 @@ import top.jiangyixin.poseidon.admin.pojo.param.EnvParam;
 import top.jiangyixin.poseidon.admin.pojo.vo.EnvVo;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
 import top.jiangyixin.poseidon.admin.service.EnvService;
-import top.jiangyixin.poseidon.admin.util.PojoUtil;
+import top.jiangyixin.poseidon.admin.util.PojoUtils;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class EnvServiceImpl extends ServiceImpl<EnvMapper, Env> implements EnvSe
 	@Override
 	public List<EnvVo> findAll() {
 		List<Env> envList = this.list(new QueryWrapper<Env>().orderByDesc("sort"));
-		return PojoUtil.copyList(envList, EnvVo.class);
+		return PojoUtils.copyList(envList, EnvVo.class);
 	}
 
 	@Override
@@ -34,9 +34,9 @@ public class EnvServiceImpl extends ServiceImpl<EnvMapper, Env> implements EnvSe
 		if (env != null) {
 			return R.fail("code已存在");
 		}
-		env = PojoUtil.copy(envParam, Env.class);
+		env = PojoUtils.copy(envParam, Env.class);
 		this.saveOrUpdate(env);
-		EnvVo envVo = PojoUtil.copy(env, EnvVo.class);
+		EnvVo envVo = PojoUtils.copy(env, EnvVo.class);
 		return new R<>(R.SUCCESS_CODE, envVo);
 	}
 }

@@ -17,8 +17,8 @@ import java.util.UUID;
  * @author jiangyixin
  * @date 2020/12/30 下午4:43
  */
-public class JwtUtil {
-	private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
+public class JwtUtils {
+	private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 	
 	/**
 	 * 生成 JWT
@@ -79,7 +79,7 @@ public class JwtUtil {
 //		String token = JwtUtil.createJwt("12345", "user", null, 1);
 //		System.out.println(token);
 		String s = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlMWVjYjIyOS1jODUwLTRmMzgtOWYyYS1mMGI0MWZlNjJkZmUiLCJpYXQiOjE2MDkzMTg4MjYsInN1YiI6InVzZXIiLCJleHAiOjE2MDkzMTg4MjZ9.W5vHqZilG_XxxiKJqN6dRY-ZJNzKLx32OmJc7Rd_eyg";
-		Claims claims = JwtUtil.parseJwt("12345", s);
+		Claims claims = JwtUtils.parseJwt("12345", s);
 		if (claims == null) {
 			System.out.println("失败");
 		} else {

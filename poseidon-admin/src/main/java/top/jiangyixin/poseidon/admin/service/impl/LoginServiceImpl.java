@@ -6,7 +6,7 @@ import top.jiangyixin.poseidon.admin.config.PoseidonConfig;
 import top.jiangyixin.poseidon.admin.mapper.UserMapper;
 import top.jiangyixin.poseidon.admin.pojo.entity.User;
 import top.jiangyixin.poseidon.admin.service.ILoginService;
-import top.jiangyixin.poseidon.admin.util.JwtUtil;
+import top.jiangyixin.poseidon.admin.util.JwtUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +33,7 @@ public class LoginServiceImpl implements ILoginService {
       return null;
     }
 
-    Claims claims = JwtUtil.parseJwt(poseidonConfig.getSecret(), token);
+    Claims claims = JwtUtils.parseJwt(poseidonConfig.getSecret(), token);
     if (claims == null) {
       return null;
     }

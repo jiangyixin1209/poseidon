@@ -11,4 +11,13 @@ import top.jiangyixin.poseidon.admin.pojo.entity.ConfigNotify;
  * @date 2020/12/26
  */
 public interface ConfigNotifyService extends IService<ConfigNotify> {
+	
+	/**
+	 * 新增config notify
+	 * @param env   env
+	 * @param project   project
+	 * @param key   key
+	 * @param value value
+	 */
+	void add(String env, String project, String key, String value);
 }

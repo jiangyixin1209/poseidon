@@ -6,22 +6,23 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.async.DeferredResult;
+import top.jiangyixin.poseidon.admin.constant.Constant;
 import top.jiangyixin.poseidon.admin.mapper.*;
 import top.jiangyixin.poseidon.admin.pojo.entity.*;
 import top.jiangyixin.poseidon.admin.pojo.param.ConfigParam;
 import top.jiangyixin.poseidon.admin.pojo.query.ConfigQuery;
 import top.jiangyixin.poseidon.admin.pojo.vo.R;
+import top.jiangyixin.poseidon.admin.service.ConfigNotifyService;
 import top.jiangyixin.poseidon.admin.service.ConfigService;
 import top.jiangyixin.poseidon.admin.service.UserService;
-import top.jiangyixin.poseidon.admin.util.PojoUtil;
+import top.jiangyixin.poseidon.admin.util.FileUtils;
+import top.jiangyixin.poseidon.admin.util.PojoUtils;
 import top.jiangyixin.poseidon.core.util.PropertyUtils;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.*;
@@ -35,12 +36,16 @@ import java.util.concurrent.*;
 public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> implements ConfigService {
 	private final static Logger logger = LoggerFactory.getLogger(ConfigServiceImpl.class);
 	
-	private final UserService userService;
-	private final ProjectMapper projectMapper;
-	private final EnvMapper envMapper;
-	private final ConfigNotifyMapper configNotifyMapper;
-	private final ConfigLogMapper configLogMapper;
-	public final static String DEFAULT_KEY_NAME = "value";
+	@Resource
+	private UserService userService;
+	@Resource
+	private ProjectMapper projectMapper;
+	@Resource
+	private EnvMapper envMapper;
+	@Resource
+	private ConfigLogMapper configLogMapper;
+	@Resource
+	private ConfigNotifyService configNotifyService;
 	/**
 	 * 访问access token
 	 */
@@ -56,34 +61,14 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	 * DeferredResult，存放各个客户端对某个key的监控
 	 */
 	private final Map<String, List<DeferredResult<R<String>>>> configDeferredResult = new ConcurrentHashMap<>();
-	private final ExecutorService executorService = Executors.newScheduledThreadPool(5);
-	/**
-	 * 是否轮询监控配置有更新
-	 */
-	private volatile boolean isLoopMonitor = true;
 	/**
 	 * 已读 configNotify id列表
 	 */
 	private final List<Long> readNotifyIdList = Collections.synchronizedList(new ArrayList<>());
-	/**
-	 * 每30秒清理一次 readNotifyIdList
-	 */
-	public final static int DEFAULT_CLEAN_TIME = 30;
-	
-	@Autowired
-	public ConfigServiceImpl(UserService userService,
-	                         ProjectMapper projectMapper, EnvMapper envMapper,
-							 ConfigNotifyMapper configNotifyMapper, ConfigLogMapper configLogMapper) {
-		this.userService = userService;
-		this.projectMapper = projectMapper;
-		this.envMapper = envMapper;
-		this.configNotifyMapper = configNotifyMapper;
-		this.configLogMapper = configLogMapper;
-	}
 	
 	@Override
 	public R<String> add(ConfigParam configParam, User user) {
-		Config config = PojoUtil.copy(configParam, Config.class);
+		Config config = PojoUtils.copy(configParam, Config.class);
 		if (config == null) {
 			return R.fail("Error");
 		}
@@ -125,22 +110,13 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		configLogMapper.insert(configLog);
 
 		// config notify
-		addConfigNotify(config.getEnv(), config.getProject(), config.getKey(), config.getValue());
+		configNotifyService.add(config.getEnv(), config.getProject(), config.getKey(), config.getValue());
 
 		return R.success();
 	}
 
 	@Override
 	public R<String> update(Config config, User user) {
-		if (StringUtils.isEmpty(config.getProject())) {
-			return R.fail("Project不能为空");
-		}
-		if (StringUtils.isEmpty(config.getEnv())) {
-			return R.fail("Env不能为空");
-		}
-		if (StringUtils.isEmpty(config.getDescription())) {
-			return R.fail("配置描述不能为空");
-		}
 		if (userService.hasProjectPermission(user, config)) {
 			return R.fail("您没有该项目的配置权限,请联系管理员开通");
 		}
@@ -174,21 +150,12 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		configLogMapper.insert(configLog);
 
 		// config notify
-		addConfigNotify(existConfig.getEnv(), existConfig.getProject(), existConfig.getKey(), existConfig.getValue());
+		configNotifyService.add(existConfig.getEnv(), existConfig.getProject(), existConfig.getKey(), existConfig.getValue());
 		return R.success();
 	}
 
 	@Override
 	public R<String> delete(Config config, User user) {
-		if (StringUtils.isEmpty(config.getEnv())) {
-			return R.fail("Env不能为空");
-		}
-		if (StringUtils.isEmpty(config.getProject())) {
-			return R.fail("Project不能为空");
-		}
-		if (StringUtils.isEmpty(config.getKey())) {
-			return R.fail("Key不能为空");
-		}
 		if (userService.hasProjectPermission(user, config)) {
 			return R.fail("您没有该项目的配置权限,请联系管理员开通");
 		}
@@ -198,7 +165,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 				.eq("key", config.getKey())
 		);
 		config.setValue(null);
-		addConfigNotify(config.getEnv(), config.getProject(), config.getKey(), null);
+		configNotifyService.add(config.getEnv(), config.getProject(), config.getKey(), null);
 		return R.success();
 	}
 
@@ -225,7 +192,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 				logger.error("illegal key : {}", key);
 				continue;
 			}
-			String value = getConfigFromFile(configQuery.getEnv(), s[0], s[1]);
+			String value = FileUtils.getConfigFromFile(this.configDir, configQuery.getEnv(), s[0], s[1]);
 			if (value == null) {
 				value = "";
 			}
@@ -237,7 +204,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	@Override
 	public DeferredResult<R<String>> monitor(ConfigQuery configQuery) {
 		DeferredResult<R<String>> deferredResult =
-				new DeferredResult<>(DEFAULT_CLEAN_TIME * 1000L, R.success());
+				new DeferredResult<>(Constant.DEFAULT_CLEAN_TIME * 1000L, R.success());
 		if (accessToken != null && accessToken.trim().length() > 0 && !accessToken.equals(configQuery.getAccessToken())) {
 			deferredResult.setResult(R.fail("AccessToken Invalid!"));
 			return deferredResult;
@@ -252,7 +219,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 		}
 		for (String key : configQuery.getKeys()) {
 			String[] result = key.split("_");
-			String configFilepath = getConfigFilepath(configQuery.getEnv(), result[0], result[1]);
+			String configFilepath = FileUtils.getConfigFilepath(this.configDir, configQuery.getEnv(), result[0], result[1]);
 			List<DeferredResult<R<String>>> deferredResultList = configDeferredResult
 					.computeIfAbsent(configFilepath, k -> new ArrayList<>());
 			configDeferredResult.put(configFilepath, deferredResultList);
@@ -268,45 +235,6 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	}
 	
 	/**
-	 * 从本地文件读取配置文件
-	 *
-	 * 如果 env = test, project = lock, key = user
-	 * 则本地文件为 {configFilePath}/test/lock_user.properties
-	 *
-	 * lock_user.properties 文件内容为
-	 * value={value}
-	 *
-	 * @param env           env
-	 * @param project		project
-	 * @param key           key
-	 * @return              配置内容
-	 */
-	public String getConfigFromFile(String env, String project, String key) {
-		String configFilePath = getConfigFilepath(env, project, key);
-		Properties properties = PropertyUtils.readProperty(configFilePath);
-		if (properties != null && properties.containsKey(DEFAULT_KEY_NAME)) {
-			return properties.getProperty("value");
-		}
-		return null;
-	}
-	
-	/**
-	 * 获取配置文件完整本地路径地址
-	 *
-	 * 如果 env = test, project = lock, key = user
-	 * 则本地文件为 {configFilePath}/test/lock_user.properties
-	 *
-	 * @param env           env
-	 * @param project		project
-	 * @param key           key
-	 * @return              本地路径地址
-	 */
-	public String getConfigFilepath(String env, String project, String key) {
-		return this.configDir.concat(File.separator).concat(env)
-				.concat(File.separator).concat(project).concat("_").concat(key).concat(".properties");
-	}
-	
-	/**
 	 * 将配置写入本地文件
 	 * @param env               env
 	 * @param project			project
@@ -315,11 +243,11 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 	 * @return                  本地文件路径
 	 */
 	public String writeConfigToFile(String env,  String project, String key, String value) {
-		String configFilepath = getConfigFilepath(env, project, key);
+		String configFilepath = FileUtils.getConfigFilepath(this.configDir, env, project, key);
 		Properties properties = PropertyUtils.readProperty(configFilepath);
 		
 		//重复更新
-		if (properties != null && value != null && value.equals(properties.getProperty("value"))) {
+		if (properties != null && value != null && value.equals(properties.getProperty(Constant.DEFAULT_KEY_NAME))) {
 			return new File(configFilepath).getPath();
 		}
 		
@@ -342,49 +270,6 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
 			}
 		}
 		return new File(configFilepath).getPath();
-	}
-
-	/**
-	 * 新增ConfigNotify
-	 * @param env			env
-	 * @param project		project
-	 * @param key			key
-	 * @param value			value
-	 */
-	public void addConfigNotify(String env, String project, String key, String value) {
-		ConfigNotify configNotify = new ConfigNotify();
-		configNotify.setEnv(env);
-		configNotify.setProject(project);
-		configNotify.setKey(key);
-		configNotify.setValue(value);
-		configNotifyMapper.insert(configNotify);
-	}
-	
-	/**
-	 * 清理被删除config的本地mirror文件
-	 * @param configFileDir             根目录
-	 * @param configDataFileList        现存config所有config file列表
-	 */
-	public void cleanConfigFile(File configFileDir, final List<String> configDataFileList) {
-		if (!configFileDir.exists() || configFileDir.list() == null
-				|| Objects.requireNonNull(configFileDir.list()).length == 0) {
-			return;
-		}
-		File[] configFileList = configFileDir.listFiles();
-		for (File configFile: Objects.requireNonNull(configFileList)) {
-			if (configFile.isFile() && !configDataFileList.contains(configFile.getPath())) {
-				configFile.delete();
-				logger.info("Poseidon cleanConfigFile delete configFile=[{}]", configFile.getPath());
-			}
-			if (configFile.isDirectory()) {
-				if (configFileDir.listFiles() != null
-						&& Objects.requireNonNull(configFileDir.listFiles()).length > 0) {
-					cleanConfigFile(configFileDir, configDataFileList);
-				} else {
-					configFile.delete();
-				}
-			}
-		}
 	}
 	
 	public List<Long> getReadNotifyIdList() {
